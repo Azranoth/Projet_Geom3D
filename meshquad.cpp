@@ -282,7 +282,8 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
     // Plan parallèle à la normale n du quad passant par AB
         // Calcul de la normale v du plan
     Vec3 AB = new Vec3(B.x-A.x, B.y-A.y, B.z-A.z);
-    Vec3 normale_plan = glm::cross(normale_quad,AB);
+    Vec3 normale_plan = glm::normalize(glm::cross(normale_quad,AB));
+
 
         // Calcul de la distance entre le point P et le plan passant par AB -> si distance > 0, alors
         // P est au dessus du plan
@@ -296,7 +297,7 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
         // Plan parallèle à la normale n du quad passant par BC
             // Calcul de la normale v du plan
         Vec3 BC = new Vec3(C.x-B.x, C.y-B.y, C.z-B.z);
-        normale_plan = glm::cross(normale_quad,BC);
+        normale_plan = glm::normalize(glm::cross(normale_quad,BC));
 
             // Calcul de la distance entre le point P et le plan passant par BC -> si distance > 0, alors
             // P est au dessus du plan
@@ -311,7 +312,7 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
             // Plan parallèle à la normale n du quad passant par CD
                 // Calcul de la normale v du plan
             Vec3 CD = new Vec3(D.x-C.x, D.y-C.y, D.z-C.z);
-            normale_plan = glm::cross(normale_quad,CD);
+            normale_plan = glm::normalize(glm::cross(normale_quad,CD));
 
                 // Calcul de la distance entre le point P et le plan passant par CD -> si distance > 0, alors
                 // P est au dessus du plan
@@ -326,7 +327,7 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
                 // Plan parallèle à la normale n du quad passant par DA
                     // Calcul de la normale v du plan
                 Vec3 DA = new Vec3(A.x-D.x, A.y-D.y, A.z-D.z);
-                normale_plan = glm::cross(normale_quad,DA);
+                normale_plan = glm::normalize((glm::cross(normale_quad,DA));
 
                     // Calcul de la distance entre le point P et le plan passant par DA -> si distance > 0, alors
                     // P est au dessus du plan
@@ -430,18 +431,28 @@ int MeshQuad::intersected_visible(const Vec3& P, const Vec3& Dir)
 
 Mat4 MeshQuad::local_frame(int q)
 {
+	// recuperation des indices de points
+    int indA = m_quad_indices[i*4];
+    int indB = m_quad_indices[i*4+1];
+    int indC = m_quad_indices[i*4+2];
+    int indD = m_quad_indices[i*4+3];
+     // recuperation des points
+    Vec3 A = m_points[indA];
+    Vec3 B = m_points[indB];
+    Vec3 C = m_points[indC];
+    Vec3 D = m_points[indD];
 	// Repere locale = Matrice de transfo avec
-	// les trois premieres colones: X,Y,Z locaux
+	// les trois premieres colonnes: X,Y,Z locaux
 	// la derniere colonne l'origine du repere
 
 	// ici Z = N et X = AB
 	// Origine le centre de la face
 	// longueur des axes : [AB]/2
 
-	// recuperation des indices de points
-	// recuperation des points
-
 	// calcul de Z:N puis de X:arete on en deduit Y
+	Vec3 Z = normal_of_quad(A,B,C,D);
+	Vec3 X = new Vec3(B.x-A.x, B.y-A.y, B.z-A.z);
+	Vec3 Y = glm::cross(X,Z);
 
 	// calcul du centre
 
