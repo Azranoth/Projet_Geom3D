@@ -223,22 +223,19 @@ Vec3 MeshQuad::normal_of_quad(const Vec3& A, const Vec3& B, const Vec3& C, const
 	// ne pas oublier de normaliser le resultat.
 
     //Normale AB^AC
-    Vec3 n1 = new Vec3((B.y - A.y)*(C.z - A.z) - (B.z - A.z)*(C.y - A.y),
-                       (B.z - A.z)*(C.x - A.x) - (B.x - A.x)*(C.z - A.z),
-                       (B.x - A.y)*(C.y - A.y) - (B.y - A.y)*(C.x - A.x));
-
+    Vec3 AB = A-B;
+    Vec3 AC =A-C;
+    Vec3 n1 = glm::cross(AB,AC);
 
     //Normale CD^CA
-    Vec3 n2 = new Vec3((D.y - C.y)*(A.z - C.z) - (D.z - C.z)*(A.y - C.y),
-                       (D.z - C.z)*(A.x - C.x) - (D.x - C.x)*(A.z - C.z),
-                       (D.x - C.y)*(A.y - C.y) - (D.y - C.y)*(A.x - C.x));
+    Vec3 CD = C-D;
+    Vec3 CA = C-A;
+    Vec3 n2 = glm::cross(CD,CA);
 
     //Moyenne des 2 puis normalisation du vecteur en résultant
-    Vec3 n = new Vec3((n1.x+n2.x)/2, (n1.y+n2.y)/2, (n1.z+n2.z)/2);
+    Vec3 n = (n1+n2)/2.0f;
 
-    double norme_n = sqrt((n.x*n.x) + (n.y*n.y) + (n.z*n.z));
-
-    Vec3 QuadNormal = new Vec3(n.x/norme_n, n.y/norme_n, n.z/norme_z);
+    Vec3 QuadNormal = glm::normalize(n);
 
     return QuadNormal;
 
@@ -255,14 +252,14 @@ float MeshQuad::area_of_quad(const Vec3& A, const Vec3& B, const Vec3& C, const 
 	// aire parallelogramme: cf produit vectoriel
 
     //Aire ABC
-    Vec3 ab = new Vec3(B.x-A.x, B.y-A.y, B.z-A.z);
-    Vec3 bc = new Vec3(C.x-B.x, C.y-B.y, C.z-B.z);
+    Vec3 ab = A-B;
+    Vec3 bc = B-A;
 
     float aire_P1 = glm::length(glm::cross(ab,bc))/2;
 
     //Aire ACD
-    Vec3 cd = new Vec3(D.x-C.x, D.y-C.y, D.z-C.z);
-    Vec3 da = new Vec3(A.x-D.x, A.y-D.y, A.z-D.z);
+    Vec3 cd = C-D;
+    Vec3 da = D-A;
 
     float aire_P2 = glm::length(glm::cross(cd,da))/2;
 
@@ -281,13 +278,13 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
     Vec3 normale_quad = normal_of_quad(A,B,C,D);
     // Plan parallèle à la normale n du quad passant par AB
         // Calcul de la normale v du plan
-    Vec3 AB = new Vec3(B.x-A.x, B.y-A.y, B.z-A.z);
+    Vec3 AB = A-B;
     Vec3 normale_plan = glm::normalize(glm::cross(normale_quad,AB));
 
 
         // Calcul de la distance entre le point P et le plan passant par AB -> si distance > 0, alors
         // P est au dessus du plan
-    Vec3 AP = new Vec3(P.x-A.x, P.y-A.y, P.z-A.z);
+    Vec3 AP = A-P;
     float distance = glm::dot(normale_plan, AP)/glm::length(normale_plan);
 
     if(distance < 0)
@@ -296,12 +293,12 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
     else{
         // Plan parallèle à la normale n du quad passant par BC
             // Calcul de la normale v du plan
-        Vec3 BC = new Vec3(C.x-B.x, C.y-B.y, C.z-B.z);
+        Vec3 BC = B-C;
         normale_plan = glm::normalize(glm::cross(normale_quad,BC));
 
             // Calcul de la distance entre le point P et le plan passant par BC -> si distance > 0, alors
             // P est au dessus du plan
-        Vec3 BP = new Vec3(P.x-B.x, P.y-B.y, P.z-B.z);
+        Vec3 BP = B-P;
         distance = glm::dot(normale_plan, BP)/glm::length(normale_plan);
 
         if(distance < 0)
@@ -311,12 +308,12 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
 
             // Plan parallèle à la normale n du quad passant par CD
                 // Calcul de la normale v du plan
-            Vec3 CD = new Vec3(D.x-C.x, D.y-C.y, D.z-C.z);
+            Vec3 CD = C-D;
             normale_plan = glm::normalize(glm::cross(normale_quad,CD));
 
                 // Calcul de la distance entre le point P et le plan passant par CD -> si distance > 0, alors
                 // P est au dessus du plan
-            Vec3 CP = new Vec3(P.x-C.x, P.y-C.y, P.z-C.z);
+            Vec3 CP = C-P;
             distance = glm::dot(normale_plan, CP)/glm::length(normale_plan);
 
             if(distance < 0)
@@ -326,12 +323,12 @@ bool MeshQuad::is_points_in_quad(const Vec3& P, const Vec3& A, const Vec3& B, co
 
                 // Plan parallèle à la normale n du quad passant par DA
                     // Calcul de la normale v du plan
-                Vec3 DA = new Vec3(A.x-D.x, A.y-D.y, A.z-D.z);
-                normale_plan = glm::normalize((glm::cross(normale_quad,DA));
+                Vec3 DA = D-A;
+                normale_plan = glm::normalize(glm::cross(normale_quad,DA));
 
                     // Calcul de la distance entre le point P et le plan passant par DA -> si distance > 0, alors
                     // P est au dessus du plan
-                Vec3 AP = new Vec3(P.x-A.x, P.y-A.y, P.z-A.z);
+                Vec3 AP = A-P;
                 distance = glm::dot(normale_plan, AP)/glm::length(normale_plan);
 
                 if(distance < 0)
@@ -370,7 +367,7 @@ bool MeshQuad::intersect_ray_quad(const Vec3& P, const Vec3& Dir, int q, Vec3& i
         float alpha = (-d-glm::dot(N,P))/glm::dot(N,Dir);
 
         // alpha => calcul de I
-        Vec3 inter = Dir;
+        inter = Dir;
         inter.x *= alpha;
         inter.y *= alpha;
         inter.z *= alpha;
@@ -382,7 +379,7 @@ bool MeshQuad::intersect_ray_quad(const Vec3& P, const Vec3& Dir, int q, Vec3& i
     }
 
 	// I dans le quad ?
-    return is_points_in_quad(I,A,B,C,D);
+    return is_points_in_quad(inter,A,B,C,D);
 
 }
 
@@ -390,11 +387,11 @@ bool MeshQuad::intersect_ray_quad(const Vec3& P, const Vec3& Dir, int q, Vec3& i
 int MeshQuad::intersected_visible(const Vec3& P, const Vec3& Dir)
 {
     int inter = -1;
-    int min_dist = INFINITY;
+    int min_dist = (int)INFINITY;
 	// on parcours tous les quads
-    for(int i = 0; i < (int)m_quad_indices/4; i++){
+    for(int i = 0; i < (int)m_quad_indices.size()/4; i++){
 
-        Vec3 Intersection = new Vec3();
+        Vec3 Intersection;
         // on teste si il y a intersection avec le rayon + modification de Intersection par effet de bord
         if(intersect_ray_quad(P,Dir,i,Intersection)){
 
@@ -411,8 +408,8 @@ int MeshQuad::intersected_visible(const Vec3& P, const Vec3& Dir)
 
                 //Calcul normale du quad && distance algébrique de P à l'intersection
                 Vec3 normale_quad = normal_of_quad(A,B,C,D);
-                Vec3 P_Intersection = new Vec3(P.x-Intersection.x, P.y-Intersection.y, P.z-Intersection.z);
-                distance = glm::dot(normale_quad, AP)/glm::length(normale_quad);
+                Vec3 P_Intersection = Intersection-P;
+                float distance = glm::dot(normale_quad, P_Intersection)/glm::length(normale_quad);
 
                 // Si la distance algébrique entre P et son intersection avec le quad courant est la plus petite trouvée
                 // jusqu'à maintenant, inter prend la valeur de l'indice du quad courant
@@ -432,10 +429,10 @@ int MeshQuad::intersected_visible(const Vec3& P, const Vec3& Dir)
 Mat4 MeshQuad::local_frame(int q)
 {
 	// recuperation des indices de points
-    int indA = m_quad_indices[i*4];
-    int indB = m_quad_indices[i*4+1];
-    int indC = m_quad_indices[i*4+2];
-    int indD = m_quad_indices[i*4+3];
+    int indA = m_quad_indices[q*4];
+    int indB = m_quad_indices[q*4+1];
+    int indC = m_quad_indices[q*4+2];
+    int indD = m_quad_indices[q*4+3];
      // recuperation des points
     Vec3 A = m_points[indA];
     Vec3 B = m_points[indB];
@@ -451,7 +448,7 @@ Mat4 MeshQuad::local_frame(int q)
 
 	// calcul de Z:N puis de X:arete on en deduit Y
 	Vec3 Z = normal_of_quad(A,B,C,D);
-	Vec3 X = new Vec3(B.x-A.x, B.y-A.y, B.z-A.z);
+    Vec3 X = A-B;
 	Vec3 Y = glm::cross(X,Z);
 
 	// calcul du centre
